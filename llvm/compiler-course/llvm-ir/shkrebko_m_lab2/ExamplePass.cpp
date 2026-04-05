@@ -19,7 +19,6 @@ struct InvertRelationalIcmpPass : PassInfoMixin<InvertRelationalIcmpPass> {
 
         auto Pred = Cmp->getPredicate();
 
-        // Только gt и ge (signed + unsigned) — как требует задание
         if (Pred != ICmpInst::ICMP_SGT && Pred != ICmpInst::ICMP_UGT &&
             Pred != ICmpInst::ICMP_SGE && Pred != ICmpInst::ICMP_UGE)
           continue;
@@ -30,9 +29,10 @@ struct InvertRelationalIcmpPass : PassInfoMixin<InvertRelationalIcmpPass> {
         Value *LHS = Cmp->getOperand(0);
         Value *RHS = Cmp->getOperand(1);
 
-        Value *NewCmp =
-            Builder.CreateICmp(InvPred, LHS, RHS, Cmp->getName() + ".rev");
-        Value *NegCmp = Builder.CreateNot(NewCmp, Cmp->getName() + ".not");
+        Value *NewCmp = Builder.CreateICmp(InvPred, LHS, RHS,
+                                           Cmp->getName() + ".rev");
+        Value *NegCmp =
+            Builder.CreateNot(NewCmp, Cmp->getName() + ".not");
 
         Cmp->replaceAllUsesWith(NegCmp);
         Cmp->eraseFromParent();
